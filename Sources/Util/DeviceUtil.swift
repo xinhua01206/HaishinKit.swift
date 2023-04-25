@@ -47,14 +47,26 @@ extension AVCaptureDevice {
 public enum DeviceUtil {
     /// Lookup device by position.
     public static func device(withPosition: AVCaptureDevice.Position) -> AVCaptureDevice? {
-        AVCaptureDevice.devices().first {
+        let discoverySession: AVCaptureDevice.DiscoverySession
+        if #available(iOS 13.0, *) {
+            discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInTripleCamera, .builtInDualCamera, .builtInDualWideCamera], mediaType: .video, position: .unspecified)
+        } else {
+            discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera], mediaType: .video, position: withPosition)
+        }
+        return discoverySession.devices.first {
             $0.hasMediaType(.video) && $0.position == withPosition
         }
     }
 
     /// Lookup device by localizedName and mediaType.
     public static func device(withLocalizedName: String, mediaType: AVMediaType) -> AVCaptureDevice? {
-        AVCaptureDevice.devices().first {
+        let discoverySession: AVCaptureDevice.DiscoverySession
+        if #available(iOS 13.0, *) {
+            discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInTripleCamera, .builtInDualCamera, .builtInDualWideCamera], mediaType: mediaType, position: .unspecified)
+        } else {
+            discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera], mediaType: mediaType, position: .unspecified)
+        }
+        return discoverySession.devices.first {
             $0.hasMediaType(mediaType) && $0.localizedName == withLocalizedName
         }
     }
